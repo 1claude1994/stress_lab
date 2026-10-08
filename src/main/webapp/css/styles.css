@@ -1,0 +1,1348 @@
+/* ================================
+   🎨 색상 변수 정의 (다크 테마 기반)
+   ================================ */
+
+:root {
+  --bg: #0a0a0a;
+  --dark: #111827;
+  --card: #1f2937;
+  --border: #374151;
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --red: #ef4444;
+  --red-light: #f87171;
+  --green: #4ade80;
+}
+
+
+/* ================================
+   🖼️ 기본 설정
+   ================================ */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+}
+
+
+/* ================================
+   🌌 배경 애니메이션
+   ================================ */
+
+.hero-bg {
+  position: fixed;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(239, 68, 68, .12),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(239, 68, 68, .08),
+      transparent 40%
+    ),
+    var(--bg);
+
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-bg::before {
+  content: "";
+
+  position: absolute;
+
+  width: 200%;
+  height: 200%;
+
+  top: -50%;
+  left: -50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(239, 68, 68, .07),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle,
+      rgba(248, 113, 113, .05),
+      transparent 50%
+    );
+
+  animation: moveBg 18s linear infinite;
+}
+
+@keyframes moveBg {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+
+  50% {
+    transform: translate(-8%, -6%) rotate(180deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+
+/* ================================
+   📑 사이드바
+   ================================ */
+
+.sidebar {
+  width: 280px;
+
+  background: var(--dark);
+  border-right: 1px solid var(--border);
+
+  padding: 2rem 1.5rem;
+
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar nav {
+  flex: 1;
+}
+
+.sidebar-user {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+
+  border-top: 1px solid var(--border);
+}
+
+
+/* 사용자 정보 카드 */
+
+.user-info {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+
+  padding: 14px 16px;
+  margin-bottom: 14px;
+
+  color: var(--text);
+  font-weight: 600;
+}
+
+.user-info i {
+  font-size: 1.5rem;
+  color: var(--red);
+}
+
+
+/* 로그인 / 로그아웃 버튼 */
+
+.sidebar-login-btn,
+.sidebar-logout-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  width: 100%;
+  padding: 14px;
+
+  border-radius: 1rem;
+
+  text-decoration: none;
+
+  color: #fff;
+  font-weight: 700;
+
+  background: linear-gradient(
+    to right,
+    var(--red),
+    var(--red-light),
+    var(--red)
+  );
+
+  transition:
+    transform .2s,
+    filter .2s;
+}
+
+.sidebar-login-btn:hover,
+.sidebar-logout-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.sidebar-login-btn:active,
+.sidebar-logout-btn:active {
+  transform: scale(.98);
+}
+
+
+/* 네비게이션 */
+
+.nav-item {
+  display: block;
+
+  padding: .85rem 1rem;
+
+  border-radius: 1rem;
+
+  color: var(--muted);
+
+  transition: .2s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: #1f2937;
+  color: white;
+}
+
+.nav-item.active {
+  font-weight: 600;
+}
+
+
+/* ================================
+   📦 카드 & 입력 필드
+   ================================ */
+
+.card,
+.auth-card,
+.feature-item,
+.profile-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.card {
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+
+
+/* 일반 입력 그룹 */
+
+.input-group {
+  margin-bottom: 1.2rem;
+}
+
+.input-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--muted);
+
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+
+/* 일반 입력 */
+
+.input-field {
+  width: 100%;
+  height: 45px;
+
+  box-sizing: border-box;
+
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+
+  padding: 0 12px;
+
+  color: white;
+  font-size: 16px;
+
+  transition: .2s;
+}
+
+.input-field:focus {
+  outline: none;
+
+  border-color: var(--red);
+
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, .2);
+}
+
+
+/* Select */
+
+select.input-field {
+  line-height: normal;
+  text-align: center;
+}
+
+
+/* ================================
+   📜 로그 출력 영역
+   ================================ */
+
+.log-box,
+.scan-log,
+.log-area,
+.ddos-log {
+  flex: 1;
+
+  background: #000;
+
+  border-radius: 1rem;
+
+  padding: 20px;
+
+  overflow-y: auto;
+
+  font-family: "Courier New", monospace;
+
+  color: var(--green);
+
+  white-space: pre-wrap;
+
+  line-height: 1.6;
+
+  font-size: .95rem;
+}
+
+.scan-log,
+.log-area {
+  min-height: 570px;
+  max-height: 570px;
+}
+
+.ddos-log {
+  min-height: 400px;
+  max-height: 400px;
+}
+
+#logArea {
+  background: #000;
+  color: var(--green);
+}
+
+
+/* ================================
+   🔔 상태 표시 배지
+   ================================ */
+
+#status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 16px;
+
+  border-radius: 9999px;
+
+  border: 1px solid transparent;
+
+  font-size: .875rem;
+  font-weight: 600;
+
+  transition: .3s ease;
+}
+
+
+/* 정상 */
+
+#status.ready,
+#status.connected {
+  background: #052e16;
+  color: var(--green);
+  border-color: var(--green);
+}
+
+
+/* 작업 중 */
+
+#status.scanning,
+#status.working,
+#status.connecting {
+  background: #451a03;
+  color: #fbbf24;
+  border-color: #fbbf24;
+
+  animation: pulse 2s infinite;
+}
+
+
+/* 완료 */
+
+#status.completed {
+  background: #052e16;
+  color: #86efac;
+  border-color: #86efac;
+}
+
+
+/* 오류 */
+
+#status.error,
+#status.disconnected {
+  background: #450a0a;
+  color: #f87171;
+  border-color: #f87171;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .75;
+  }
+}
+
+
+/* ================================
+   🔘 버튼 스타일
+   ================================ */
+
+.btn-primary,
+.start-btn,
+.start-login-btn,
+.auth-btn {
+  border: none;
+
+  color: white;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  background: linear-gradient(
+    to right,
+    var(--red),
+    var(--red-light),
+    var(--red)
+  );
+
+  transition: .25s;
+}
+
+.btn-primary:hover,
+.start-btn:hover,
+.start-login-btn:hover,
+.auth-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+
+/* 큰 시작 버튼 */
+
+.start-btn {
+  width: 100%;
+
+  padding: 22px;
+
+  margin-top: 2rem;
+
+  font-size: 22px;
+
+  border-radius: 1.5rem;
+}
+
+.start-btn:active,
+.start-login-btn:active {
+  transform: scale(.97);
+}
+
+.start-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+
+/* 로그인 버튼 */
+
+.start-login-btn {
+  padding: 18px 46px;
+
+  font-size: 1.25rem;
+
+  border-radius: 1.5rem;
+
+  box-shadow:
+    0 10px 30px rgba(239, 68, 68, .3);
+}
+
+
+/* ================================
+   👤 프로필 버튼
+   ================================ */
+
+.profile-btn {
+  width: 100%;
+
+  border: 2px solid var(--border);
+  border-radius: 1.25rem;
+
+  padding: 1.6rem 1.4rem;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: .25s;
+
+  min-height: 150px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  color: var(--text);
+  font-weight: 600;
+}
+
+.profile-btn:hover {
+  background: #374151;
+  border-color: var(--red);
+
+  transform: translateY(-3px);
+}
+
+.profile-btn:hover span {
+  color: #e5e7eb;
+}
+
+.profile-btn.active {
+  border-color: var(--red);
+
+  background: #2a2f3a;
+
+  box-shadow:
+    0 0 0 4px rgba(239, 68, 68, .25);
+}
+
+
+/* ================================
+   📌 푸터
+   ================================ */
+
+footer {
+  background: var(--bg);
+
+  border-top: 1px solid var(--border);
+
+  flex-shrink: 0;
+
+  width: 100%;
+
+  position: relative;
+  z-index: 50;
+}
+
+
+/* ================================
+   🏠 인덱스 히어로 영역
+   ================================ */
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 2rem;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 18px;
+
+  margin-bottom: 1.2rem;
+}
+
+.hero-title {
+  margin: 0;
+
+  font-size: 4.2rem;
+  font-weight: 800;
+
+  color: white;
+
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  max-width: 580px;
+
+  margin-bottom: 3rem;
+
+  font-size: 1.3rem;
+
+  color: var(--muted);
+
+  line-height: 1.6;
+}
+
+.feature-list {
+  display: flex;
+
+  gap: 2rem;
+
+  margin-top: 4.5rem;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+}
+
+.feature-item {
+  min-width: 190px;
+
+  padding: 1.4rem 1.8rem;
+
+  border-radius: 1.2rem;
+
+  transition: .25s;
+}
+
+.feature-item:hover {
+  border-color: var(--red);
+
+  transform: translateY(-4px);
+}
+
+.feature-item i {
+  margin-bottom: .7rem;
+
+  font-size: 1.7rem;
+
+  color: var(--red);
+}
+
+.feature-item h4 {
+  margin-bottom: .25rem;
+
+  font-size: 1.05rem;
+  font-weight: 600;
+
+  color: var(--text);
+}
+
+.feature-item p {
+  font-size: .88rem;
+  color: var(--muted);
+}
+
+
+/* ================================
+   🔐 인증(Auth) 관련
+   ================================ */
+
+.auth-container,
+.main-content {
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 2rem 1rem;
+
+  position: relative;
+  z-index: 10;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 2.5rem 2rem;
+
+  border-radius: 1.5rem;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, .4);
+}
+
+.auth-title {
+  margin-bottom: .4rem;
+
+  font-size: 1.8rem;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.auth-subtitle {
+  margin-bottom: 2rem;
+
+  color: var(--muted);
+
+  font-size: .95rem;
+
+  text-align: center;
+}
+
+
+/* 탭 */
+
+.tab-menu {
+  display: flex;
+
+  gap: .5rem;
+
+  margin-bottom: 1.8rem;
+
+  padding: .4rem;
+
+  background: var(--dark);
+
+  border-radius: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+
+  padding: .7rem;
+
+  border: none;
+  border-radius: .8rem;
+
+  background: transparent;
+
+  color: var(--muted);
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.tab-btn.active {
+  background: var(--red);
+  color: white;
+}
+
+
+/* 인증 폼 */
+
+.form-section {
+  display: none;
+}
+
+.form-section.active {
+  display: block;
+}
+
+
+/* 인증 버튼 */
+
+.auth-btn {
+  width: 100%;
+
+  padding: 1rem;
+
+  margin-top: .5rem;
+
+  border-radius: 1rem;
+
+  font-size: 1.1rem;
+}
+
+
+/* 추가 링크 */
+
+.extra-links {
+  margin-top: 1.2rem;
+
+  text-align: center;
+}
+
+.extra-links a {
+  color: var(--muted);
+
+  font-size: .875rem;
+
+  text-decoration: none;
+}
+
+.extra-links a:hover {
+  color: var(--red);
+}
+
+
+/* ================================
+   회원가입 입력 필드 그리드
+   ================================ */
+
+.register-grid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 0 1rem;
+}
+
+.register-grid .input-group:nth-child(3) {
+  grid-column: 1 / 3;
+}
+
+
+/* ================================
+   👤 로그인 사용자 프로필
+   ================================ */
+
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: .85rem 1rem;
+
+  color: var(--text);
+
+  font-weight: 600;
+
+  border-radius: 1rem;
+
+  transition: .2s;
+}
+
+.sidebar-profile i {
+  font-size: 1.5rem;
+
+  color: #d1d5db;
+}
+
+
+/* 로그아웃 */
+
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: .85rem 1rem;
+
+  color: var(--muted);
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  border-radius: 1rem;
+
+  transition: .2s;
+}
+
+.sidebar-logout i {
+  color: #9ca3af;
+}
+
+.sidebar-logout:hover {
+  background: #1f2937;
+  color: white;
+}
+
+.sidebar-logout:hover i {
+  color: white;
+}
+
+
+/* ================================
+   📄 페이징 버튼
+   ================================ */
+
+.page-btn {
+  background: var(--dark);
+  color: var(--text);
+
+  transition: .2s;
+}
+
+.page-btn:hover,
+.page-btn.active {
+  background: var(--red);
+  color: #fff;
+}
+
+.page-btn.active {
+  font-weight: 600;
+}
+
+
+/* 홈 버튼 */
+
+.home-btn {
+  width: 100%;
+  height: 45px;
+
+  margin-top: 12px;
+
+  border-radius: 12px;
+
+  background: var(--dark);
+
+  border: 1px solid var(--border);
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+
+/* ================================
+   🔍 검색 Select
+   ================================ */
+
+.custom-select-wrap {
+  position: relative;
+
+  width: 120px;
+}
+
+.custom-select {
+  width: 100%;
+  height: 40px;
+
+  padding: 0 35px 0 15px;
+
+  color: white;
+
+  font-size: 14px;
+
+  border-radius: 12px;
+
+  border: 1px solid var(--border);
+
+  background: var(--dark);
+
+  appearance: none;
+
+  outline: none;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.custom-select:hover {
+  border-color: var(--red);
+}
+
+.custom-select:focus {
+  border-color: var(--red);
+
+  box-shadow:
+    0 0 0 2px rgba(239, 68, 68, .2);
+}
+
+.custom-select option {
+  background: #1f1f1f;
+  color: white;
+}
+
+
+/* 드롭다운 화살표 */
+
+.select-icon {
+  position: absolute;
+
+  right: 13px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #aaa;
+
+  pointer-events: none;
+
+  font-size: 12px;
+}
+
+
+/* ================================
+   📊 대시보드 테이블
+   ================================ */
+
+.dashboard-table {
+  width: 100%;
+
+  table-layout: fixed;
+
+  border-collapse: collapse;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 12px;
+
+  text-align: center;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-table th {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.dashboard-table td {
+  color: var(--text);
+
+  word-wrap: break-word;
+}
+
+
+/* ================================
+   👤 개인정보 수정 모달
+   ================================ */
+
+.profile-input-group {
+  margin-bottom: 18px;
+}
+
+.profile-input-group:last-of-type {
+  margin-bottom: 0;
+}
+
+
+/* 라벨 */
+
+.profile-input-group > label {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  height: 22px;
+
+  margin-bottom: 8px;
+
+  color: var(--muted);
+
+  font-size: .9rem;
+
+  font-weight: 600;
+}
+
+.profile-input-group > label i {
+  width: 20px;
+
+  margin-right: 6px;
+
+  color: var(--red);
+
+  text-align: center;
+}
+
+
+/* ================================
+   🔒 아이디 읽기 전용
+   ================================ */
+
+.profile-readonly {
+  width: 100%;
+  height: 46px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 0 14px;
+
+  background: #151b26;
+
+  border: 1px solid #303846;
+
+  border-radius: 12px;
+
+  color: #9ca3af;
+
+  font-size: 15px;
+}
+
+
+/* ================================
+   ✏️ 이름 / 이메일 입력
+   ================================ */
+
+.profile-input {
+  display: block;
+
+  width: 100%;
+  height: 46px;
+
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  background: var(--dark);
+
+  border: 1px solid var(--border);
+
+  border-radius: 12px;
+
+  color: white;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: .2s;
+}
+
+.profile-input::placeholder {
+  color: #6b7280;
+}
+
+.profile-input:focus {
+  border-color: var(--red);
+
+  box-shadow:
+    0 0 0 3px rgba(239, 68, 68, .15);
+}
+
+
+/* ================================
+   💬 아이디 설명
+   ================================ */
+
+.profile-help {
+  margin: 6px 0 0;
+
+  font-size: .75rem;
+  
+  text-align: center;
+
+  color: #6b7280;
+}
+
+
+/* ================================
+   🔘 개인정보 수정 버튼 영역
+   ================================ */
+
+.profile-modal-buttons {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 45px;
+}
+
+
+/* ================================
+   취소 / 저장 공통
+   ================================ */
+
+.profile-cancel-btn,
+.profile-save-btn {
+  width: 100%;
+  height: 46px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+  padding: 0;
+
+  border-radius: 12px;
+
+  font-family: inherit;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+
+/* ================================
+   취소
+   ================================ */
+
+.profile-cancel-btn {
+  background: var(--dark);
+
+  border: 1px solid var(--border);
+
+  color: var(--muted);
+}
+
+.profile-cancel-btn:hover {
+  background: #1f2937;
+
+  border-color: #6b7280;
+
+  color: white;
+}
+
+
+/* ================================
+   저장
+   ================================ */
+
+.profile-save-btn {
+  background: linear-gradient(
+    to right,
+    var(--red),
+    var(--red-light)
+  );
+
+  border: 1px solid transparent;
+
+  color: white;
+}
+
+.profile-save-btn:hover {
+  filter: brightness(1.1);
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 20px rgba(239, 68, 68, .25);
+}
+
+
+/* 저장 아이콘 */
+
+.profile-save-btn i {
+  margin-right: 7px;
+
+  font-size: 13px;
+}
+
+
+/* 버튼 클릭 */
+
+.profile-cancel-btn:active,
+.profile-save-btn:active {
+  transform: scale(.98);
+}
+
+
+/* ================================
+   🔐 비밀번호 입력창 아이콘
+   ================================ */
+
+input[type="password"]::-ms-reveal {
+  filter:
+    invert(25%)
+    sepia(95%)
+    saturate(2000%)
+    hue-rotate(345deg);
+}
+
+
+/* ================================
+   📱 반응형 - 태블릿
+   ================================ */
+
+@media (max-width: 1024px) {
+
+  .sidebar {
+    width: 230px;
+  }
+
+  .hero-title {
+    font-size: 3.2rem;
+  }
+}
+
+
+/* ================================
+   📱 반응형 - 모바일
+   ================================ */
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    display: none;
+  }
+
+  .hero-title {
+    font-size: 2.6rem;
+  }
+
+  .feature-list {
+    gap: 1rem;
+  }
+
+  .register-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .register-grid .input-group:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .profile-modal-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+}
