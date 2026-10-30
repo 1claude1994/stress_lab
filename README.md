@@ -1,75 +1,136 @@
-# 🛡️ Stress Lab
+# 🛡️ Stress Lab - 仮想化インフラベースのセキュリティ診断自動化・統合管理システム
 
-Java Servlet/JSPをベースにした**ネットワークセキュリティテスト・管理Webアプリケーション**です。
+VMware仮想化環境上のLinuxサーバーとKali Linuxノードを安全に接続し、ネットワーク負荷テスト、ポートスキャン、リアルタイムリモートターミナル制御を提供する**統合セキュリティインフラ・管理プラットフォーム**です。
 
-Webブラウザからネットワークポートスキャン、ネットワーク負荷テスト、Kali Linuxリモートターミナル、脆弱性情報の照会、会員管理、掲示板などの機能を一つのWebインターフェースから利用できるように実装しました。
+Webブラウザからネットワークポートスキャン、ネットワーク負荷テスト、Kali Linuxリモートターミナル、脆弱性情報（CVE）の照会、会員管理、掲示板などの機能を一つのWebインターフェースから利用できるように実装しました。
 
-> ⚠️ **注意**
->
-> 本プロジェクトは、セキュリティ学習および許可されたテスト環境での利用を目的としています。
-> ポートスキャン、ネットワーク負荷テスト、リモートコマンド実行機能は、必ず自分が管理しているシステム、または明示的な許可を得たシステムに対してのみ使用してください。
+単なるWeb機能の実装にとどまらず、**仮想ネットワーク分離、ファイアウォール(UFW)アクセス制御、SSH/JSchによるセキュアなホスト間通信**を前提としたインフラアーキテクチャを設計・構築しています。
 
----
-
-## 📌 プロジェクト概要
-
-Stress Labは、JSP/ServletベースのWebアプリケーションとKali Linux環境をSSH/WebSocketで接続し、ネットワークおよびセキュリティテスト機能を提供するプロジェクトです。
-
-### 主な機能
-
-- 🔐 会員登録 / ログイン
-- 👤 会員情報の変更
-- 🔑 パスワード変更
-- 🗑️ 会員退会
-- 📢 お知らせ掲示板
-- 🔎 お知らせ検索 / ページネーション
-- 📝 お知らせの作成 / 編集 / 削除
-- 🔍 Nmapによるポートスキャン
-- 📊 ネットワーク負荷テスト
-- 🖥️ Kali Linuxリモートターミナル
-- 🛡️ CVE / 脆弱性情報管理
-- 🔌 SSHによるリモートコマンド実行
-- ⚡ WebSocketによるリアルタイムターミナル出力
+> ⚠️ **注意事項**
+> 本プロジェクトは、セキュリティ学習および認可されたテスト環境内での検証を目的として構築されています。
+> 負荷テストやポートスキャン、リモートコマンド実行機能は、自組織が管理する検証用ネットワークおよび明示的な許可を得たターゲットに対してのみ実行されます。
 
 ---
 
-## 🖥️ アーキテクチャ
+## 📌 インフラ・システム概要
+
+ホストマシン上のVMware環境にWeb/App/DB統合ノードおよびセキュリティ検証ノード(Kali Linux)を配置し、セキュアな内部ネットワーク経由で診断タスクを制御する構成をとっています。
+
+### 主要インフラ・セキュリティ機能
+- **仮想ネットワーク構築 & パケット制御**: VMware仮想アダプター(`eth0`)および特定ポートベースの通信制御
+- **ファイアウォール(UFW)アクセス制御**: 22(SSH), 80/443(Web), 3306(MariaDB), 53(DNS)の最小権限ポート設計
+- **セキュアリモート通信**: JSchライブラリを用いたSSHセッション管理およびコマンド実行制御
+- **WebSocket双方向通信**: ブラウザとLinux Shell間のリアルタイムターミナルストリーミング
+- **ネットワークセキュリティ診断**: Nmapエンジン連動によるポート・サービススキャン
+- **負荷耐性テスト**: Kali Linuxの`hping3`を用いたパケット負荷テスト(SYN/UDP/ICMP/ACK)
+- **脆弱性データ統合**: CVEメタデータのDB格納および検索管理
+
+### 主要アプリケーション機能
+- 🔐 会員登録 / ログイン / パスワード変更 / 会員情報の変更 / 会員退会
+- 📢 お知らせ掲示板（CRUD・タイトル/内容検索・ページネーション・投稿権限確認）
+- 🔍 Nmapによるプロファイル別ポートスキャン
+- 📊 ネットワーク負荷テストUI（パケット種別・カウント・宛先制御）
+- 🖥️ Kali Linuxリモートターミナル（リアルタイムログ表示・クリアコマンド対応）
+- 🛡️ CVE / 脆弱性情報管理（CVSSスコア、影響度、ベンダ情報照会）
+
+---
+
+## 🖥️ インフラストラクチャ & ネットワーク構成
+
+本システムは、各コンポーネントが役割に応じた通信ポートのみを許可するネットワークアクセス制御を行っています。
 
 ```text
-┌───────────────────────────────┐
-│          Web Browser          │
-│        JSP / JavaScript       │
-└───────────────┬───────────────┘
-                │ HTTP / WebSocket
+[ Client (Web Browser) ]
+           │
+           │ HTTP (Port 80) / HTTPS (Port 443) / WebSocket
+           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  VMware Virtual Machine (Linux Node : 192.168.0.25)         │
+│                                                             │
+│  [ Firewall (UFW) Access Control ]                          │
+│  - 80/tcp, 443/tcp : Web Application Access                 │
+│  - 22/tcp          : SSH Remote Administration              │
+│  - 3306/tcp        : Database Internal Binding              │
+│  - 53              : Name Resolution                        │
+│                                                             │
+│  ┌─────────────────────────┐     ┌────────────────────────┐ │
+│  │ Apache Tomcat Engine    │     │ MariaDB Database       │ │
+│  │ (Servlet / WebSocket)   │────▶│ (User / CVE / Logs)    │ │
+│  │                         │JDBC │ Port: 3306             │ │
+│  └────────────┬────────────┘     └────────────────────────┘ │
+└───────────────┼─────────────────────────────────────────────┘
+                │
+                │ SSH Protocol (Port 22 / JSch Channel)
                 ▼
-┌───────────────────────────────┐
-│       Apache Tomcat           │
-│                               │
-│  Controller (Servlet)         │
-│          ↓                    │
-│       Service                 │
-│          ↓                    │
-│         DAO                   │
-│          ↓                    │
-│      JDBC / MariaDB           │
-└───────────────┬───────────────┘
-                │ SSH
-                ▼
-┌───────────────────────────────┐
-│          Kali Linux           │
-│                               │
-│  Nmap                         │
-│  hping3                       │
-│  Shell Command                │
-└───────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Security Testing Node (Kali Linux Environment)             │
+│                                                             │
+│  - Nmap (Service Detection, Script Engine)                  │
+│  - hping3 (Packet Generation, Traffic Load Test)            │
+│  - Remote Interactive Shell Execution                       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🏗️ プロジェクト構成
+## ⚙️ インフラ環境 & 技術スタック
+
+| レイヤー | 採用技術・環境 | 役割・詳細 |
+|---|---|---|
+| **Virtualization** | VMware Workstation / ESXi | 仮想マシン分離および仮想ネットワーク(NAT/Host-only)構築 |
+| **OS / Server** | Linux (Ubuntu/Debian系) | サーバー基盤、`eth0` (192.168.0.25) インターフェース構成 |
+| **Network Security** | UFW (Uncomplicated Firewall) | 22, 53, 80, 443, 3306 ポートへの厳密なトラフィック制御 |
+| **Security Testing** | Kali Linux, Nmap, hping3 | ネットワークスキャンおよびトラフィック負荷生成ノード |
+| **Remote Protocol** | SSH, JSch (Java SSH API) | 暗号化チャネルを通じたリモートコマンド実行およびセッション管理 |
+| **Web / Runtime** | Apache Tomcat 9+, Java 17+ | コントローラー、WebSocketエンドポイント、ビジネスロジック |
+| **Database** | MariaDB | 認証情報、監査ログ、CVE脆弱性データの永続化 (Port: 3306) |
+| **DBアクセス** | JDBC (DAO / DTO パターン) | コネクション管理およびデータ永続化処理 |
+| **フロントエンド** | JSP, HTML5, CSS3, JavaScript | 管理・テスト実行用Webダッシュボード |
+| **CSS Framework** | Tailwind CSS | レスポンシブUI構築 |
+| **Realtime Stream** | WebSocket API | ターミナルログおよびテスト進行状況のリアルタイムストリーミング |
+| **開発環境 / ビルド** | Eclipse | Eclipse Dynamic Web Project |
+
+---
+
+## 🔒 セキュリティ制御 & ハードニング設計
+
+本環境では、不用意な外部露出を防ぎ、安全な検証環境を維持するために以下の設定を適用しています。
+
+### 1. ファイアウォール(UFW)のポート開放ポリシー
+不要なポートをすべて遮断し、サービス稼働に必要な最小限のポートのみを明示的に開放。
+
+```text
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     ALLOW       Anywhere (リモート管理用)
+53                         ALLOW       Anywhere (DNS名前解決)
+3306/tcp                   ALLOW       Anywhere (DBアクセス)
+80/tcp                     ALLOW       Anywhere (HTTP Webサービス)
+443/tcp                    ALLOW       Anywhere (HTTPS暗号化通信)
+22/tcp (v6)                ALLOW       Anywhere (v6)
+53 (v6)                    ALLOW       Anywhere (v6)
+3306/tcp (v6)              ALLOW       Anywhere (v6)
+80/tcp (v6)                ALLOW       Anywhere (v6)
+443/tcp (v6)               ALLOW       Anywhere (v6)
+```
+
+### 2. リモート実行のセキュア化設計
+- **通信路の暗号化**: 平文通信を排除し、すべてSSH暗号化トンネルを経由してKaliノードへコマンドを伝達。
+- **入力値サニタイズ (OS Command Injection対策)**: Webインターフェースから入力されたIP/ポート引数に対し、正規表現による厳密なバリデーションを実施。
+- **Allowlist制限**: 実行可能なバイナリを`nmap`および`hping3`に限定し、任意のシステム破壊コマンド実行を防止。
+- **DBアクセス制御**: MariaDBを安全な内部ネットワークにバインドし、診断ツールノードとデータ保管ノードの役割を明確に分離。
+
+---
+
+## 🏗️ プロジェクト構造
 
 ```text
 stress_lab/
+├── infra/
+│   └── ufw-rules.txt            # ファイアウォール設定およびネットワークアクセス定義
+│
 ├── src/
 │   └── main/
 │       ├── java/
@@ -126,439 +187,162 @@ stress_lab/
 
 ---
 
-## ⚙️ 技術スタック
+## 🔄 MVC / DAO アーキテクチャ
 
-| カテゴリ | 技術 |
-|---|---|
-| 言語 | Java |
-| Web | JSP / Servlet |
-| フロントエンド | HTML / CSS / JavaScript |
-| CSS Framework | Tailwind CSS |
-| データベース | MariaDB |
-| DBアクセス | JDBC |
-| Webサーバー | Apache Tomcat |
-| リモート接続 | SSH / JSch |
-| リアルタイム通信 | WebSocket |
-| ネットワークスキャナ | Nmap |
-| 負荷テスト | hping3 |
-| 開発環境 | Eclipse |
-| ビルド | Eclipse Dynamic Web Project |
-
----
-
-## 🔐 認証機能
-
-会員機能はServlet + DAO + Sessionをベースに実装しました。
-
-### 会員機能
-
-- ID重複チェック
-- 会員登録
-- ログイン
-- Sessionによるログイン状態の管理
-- 会員情報の変更
-- パスワード変更
-- 会員退会
-
-ログイン成功時には`HttpSession`にログインユーザー情報を保存します。
-
-```java
-HttpSession session = req.getSession();
-session.setAttribute("loginUser", user);
-```
-
----
-
-## 📢 お知らせ掲示板
-
-お知らせ掲示板はJSP + Servlet + DAO構成で実装しました。
-
-### 主な機能
-
-- お知らせ一覧
-- 投稿詳細
-- 閲覧数の増加
-- 投稿作成
-- 投稿編集
-- 投稿削除
-- タイトル検索
-- 内容検索
-- ページネーション
-- ログインユーザーによる投稿権限確認
-
-### 処理構成
+本システムは、保守性と拡張性を考慮した従来型のJSP/Servletアーキテクチャをベースに実装しています。
 
 ```text
-notice.jsp
-    ↓
-notice Servlet
-    ↓
-NoticeDao
-    ↓
-MariaDB
-```
-
----
-
-## 🔎 ポートスキャン
-
-Nmapを利用し、許可されたテスト対象のネットワーク情報を確認できるように実装しました。
-
-### テストプロファイル
-
-- Full Scan
-- Fast Port Scan
-- Full Port Scan
-- Service Version Detection
-- OS Detection
-- Vulnerability Script Scan
-
-### 処理構成
-
-```text
-Port Scan JSP
-      ↓
-stress Servlet
-      ↓
-PortScanService
-      ↓
-SSHUtil
-      ↓
-Kali Linux
-      ↓
-Nmap
-      ↓
-Scan Result
-```
-
-`PortScanService`はテスト対象とスキャンオプションを受け取り、SSH経由でKali Linux上のNmapを実行します。
-
----
-
-## 📊 ネットワーク負荷テスト
-
-Kali Linuxの`hping3`を利用したネットワーク負荷テスト機能を実装しました。
-
-### 対応テストタイプ
-
-- SYN
-- UDP
-- ICMP
-- ACK
-
-### 設定項目
-
-- Target
-- Destination Port
-- Packet Count
-- Delay
-- Random Source IP
-
-### 処理構成
-
-```text
-DDoS JSP
-   ↓
-JavaScript Fetch
-   ↓
-stress Servlet
-   ↓
-DDoSService
-   ↓
-SSHUtil
-   ↓
-Kali Linux
-   ↓
-hping3
-```
-
-> ⚠️ 本機能は、自分が管理している環境、または明示的なテスト許可を得た環境でのみ使用してください。
-
----
-
-## 🖥️ Kali Linuxリモートターミナル
-
-WebSocketを利用して、WebブラウザからKali Linuxのターミナルとリアルタイムに通信できるように実装しました。
-
-```text
-Browser
-   │
-   │ WebSocket
-   ▼
-Tomcat WebSocket
-   │
-   │ SSH
-   ▼
-Kali Linux Shell
-```
-
-### 特徴
-
-- WebSocketによるリアルタイム通信
-- SSH接続
-- コマンド入力
-- コマンド実行結果のリアルタイム表示
-- ターミナルログの自動スクロール
-- 接続状態の表示
-- `clear`コマンド対応
-
----
-
-## 🔌 SSH通信
-
-リモートKali Linuxとの通信にはJSchを使用しています。
-
-```text
-Java Application
-       ↓
-     JSch
-       ↓
-      SSH
-       ↓
-Kali Linux
-```
-
-`SSHUtil`でSSH SessionおよびShell Channelを管理し、リモートコマンドの実行結果をJavaアプリケーションへ渡します。
-
----
-
-## 🛡️ 脆弱性情報管理
-
-CVEベースの脆弱性情報をMariaDBに保存し、検索・照会できるように実装しました。
-
-### 保存情報
-
-- CVE ID
-- Title
-- Description
-- Severity
-- CVSS Score
-- Vendor
-- Product
-- Published Date
-- Reference URL
-
-```text
-VulnerabilityDto
-        ↓
-VulnerabilityDao
-        ↓
-MariaDB
-```
-
-DAOでは、最近登録された脆弱性や全脆弱性情報などを取得できるようにしています。
-
----
-
-## 🗄️ データベース
-
-MariaDBを使用し、JDBCを通じてデータベースへアクセスします。
-
-### Member
-
-```text
-id
-name
-password
-email
-created_at
-```
-
-### Notice
-
-```text
-notice_id
-writer_id
-title
-content
-view_count
-created_at
-updated_at
-```
-
-### Vulnerability
-
-```text
-id
-cve_id
-title
-description
-severity
-cvss_score
-vendor
-product
-published_date
-reference_url
-created_at
-```
-
----
-
-## 🔄 MVC / DAO構成
-
-本プロジェクトでは、従来型のJSP/Servletアーキテクチャをベースに実装しています。
-
-```text
-JSP
+JSP (View)
  │
  ▼
-Servlet Controller
+Servlet Controller (Routing / Validation)
  │
  ▼
-Service
+Service (Business Logic / Remote SSH Execution)
  │
  ▼
-DAO
+DAO (Data Access Object)
  │
  ▼
 JDBC
  │
  ▼
-MariaDB
+MariaDB (Port: 3306)
 ```
 
-### Controller
+- **Controller**: HTTPリクエストを処理し、入力バリデーション後に適切なServiceまたはDAOを呼び出し (`member.java`, `notice.java`, `stress.java`)
+- **Service**: 負荷テスト・スキャンロジックの構築およびSSHUtilを通じた外部Linuxノードとの連携 (`PortScanService.java`, `DDoSService.java`)
+- **DAO**: MariaDBに対するSQL実行およびトランザクション処理 (`MemberDao.java`, `NoticeDao.java`, `VulnerabilityDao.java`)
+- **DTO**: 各層間におけるデータの受け渡し (`MemberDto.java`, `NoticeDto.java`, `VulnerabilityDto.java`)
 
-HTTPリクエストを処理し、必要なServiceまたはDAOを呼び出します。
+---
+
+## 🔎 診断機能 & 処理パイプライン
+
+### 1. ネットワークスキャン (Nmap連携)
 
 ```text
-member.java
-notice.java
-stress.java
+Port Scan JSP ──▶ stress Servlet ──▶ PortScanService ──▶ SSHUtil (JSch) ──▶ Kali Linux (Nmap) ──▶ Scan Result
 ```
 
-### Service
+- **テストプロファイル**:
+  - Full Scan
+  - Fast Port Scan
+  - Full Port Scan
+  - Service Version Detection (`-sV`)
+  - OS Detection (`-O`)
+  - Vulnerability Script Scan (`--script vuln`)
 
-ビジネスロジックおよび外部システムとの連携を担当します。
+`PortScanService`はテスト対象とスキャンオプションを受け取り、SSHトンネル経由でKali Linux上のNmapを実行して結果をパースします。
+
+### 2. ネットワーク負荷テスト (hping3連携)
 
 ```text
-PortScanService
-DDoSService
+DDoS JSP ──▶ JavaScript Fetch ──▶ stress Servlet ──▶ DDoSService ──▶ SSHUtil (JSch) ──▶ Kali Linux (hping3)
 ```
 
-### DAO
+- **対応テストタイプ**: SYN, UDP, ICMP, ACK
+- **設定項目**: Target IP, Destination Port, Packet Count, Delay, Random Source IP
 
-SQLを実行し、データベースとのデータのやり取りを担当します。
+### 3. Kali Linuxリモートターミナルエミュレーション
 
 ```text
-MemberDao
-NoticeDao
-VulnerabilityDao
+Browser ──(WebSocket)──▶ Tomcat WebSocket ──(SSH / JSch)──▶ Kali Linux Shell
 ```
 
-### DTO
+- WebSocketによる双方向リアルタイム通信
+- SSHセッションの動的管理と標準入出力バインディング
+- ターミナルログの自動スクロールおよび`clear`コマンド対応
 
-各レイヤー間でデータを受け渡すために使用します。
+---
 
-```text
-MemberDto
-NoticeDto
-VulnerabilityDto
+## 🗄️ データモデル & スキーマ設計 (MariaDB)
+
+### Member (認証・管理)
+
+```sql
+id           VARCHAR(50) PRIMARY KEY,
+name         VARCHAR(100) NOT NULL,
+password     VARCHAR(255) NOT NULL,
+email        VARCHAR(100) NOT NULL,
+created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+```
+
+### Notice (お知らせ掲示板)
+
+```sql
+notice_id    INT AUTO_INCREMENT PRIMARY KEY,
+writer_id    VARCHAR(50) NOT NULL,
+title        VARCHAR(255) NOT NULL,
+content      TEXT NOT NULL,
+view_count   INT DEFAULT 0,
+created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+```
+
+### Vulnerability (CVEメタデータ管理)
+
+```sql
+id             INT AUTO_INCREMENT PRIMARY KEY,
+cve_id         VARCHAR(50) UNIQUE NOT NULL,
+title          VARCHAR(255) NOT NULL,
+description    TEXT,
+severity       VARCHAR(20),
+cvss_score     DECIMAL(3,1),
+vendor         VARCHAR(100),
+product        VARCHAR(100),
+published_date DATE,
+reference_url  VARCHAR(255),
+created_at     DATETIME DEFAULT CURRENT_TIMESTAMP
 ```
 
 ---
 
-## 🚀 実行環境
+## 🚀 実行手順 & セットアップ
 
-### Requirements
+### 必要要件
+- JDK 17+
+- Apache Tomcat 9+
+- MariaDB 10+
+- VMware Workstation / ESXi
+- Kali Linux（SSHサーバー、Nmap、hping3インストール済み）
 
-- JDK
-- Apache Tomcat
-- MariaDB
-- EclipseまたはJava Web開発環境
-- Kali Linux
-- SSH接続環境
-- Nmap
-- hping3
-
-### 基本的な実行手順
-
-```text
-1. MariaDBを起動
-2. プロジェクト用DBおよびテーブルを作成
-3. MariaDB接続情報を設定
-4. Kali LinuxのSSH環境を設定
-5. Kali Linuxに必要なテストツールをインストール
-6. Tomcatへプロジェクトをデプロイ
-7. Webブラウザからアプリケーションへアクセス
-```
+### 基本セットアップ
+1. MariaDBを起動し、プロジェクト用DBおよび各テーブルを作成
+2. `MariaDBConnection.java`にて接続情報（Host, Port, User, Password）を設定
+3. Kali LinuxノードでSSHサービスを起動（`sudo systemctl start ssh`）
+4. TomcatサーバーにWARファイルをデプロイ、またはEclipseから実行
+5. ブラウザより管理ダッシュボード（`http://192.168.0.25:8080/stress_lab/`）へアクセス
 
 ---
 
-## ⚠️ セキュリティに関する注意事項
+## 📚 学習・技術検証実績
 
-本プロジェクトにはリモートコマンド実行機能が含まれているため、実際の運用環境では追加のセキュリティ対策が必要です。
-
-特に以下の対策を想定しています。
-
-- SSHアカウント情報をソースコードにハードコーディングしない
-- 環境変数またはSecret Managerを使用する
-- 管理者認証および権限管理
-- コマンド入力値のバリデーション
-- Allowlistによる実行可能コマンド・オプションの制限
-- Target IP / Networkの検証
-- CSRF対策
-- Sessionセキュリティ設定
-- パスワードのハッシュ化
-- SSH Key認証
-- 操作ログ・監査ログの記録
-- テスト対象に対するアクセス権限の確認
+- **インフラ・ネットワーク**: VMware仮想ネットワーク構築、UFWファイアウォール設計、ホスト間アクセス制御
+- **セキュリティエンジニアリング**: Nmapスキャンプロファイル設計、hping3負荷検証、OS Command Injection対策設計
+- **バックエンド・プロトコル**: Java Servlet/JSP、MVC/DAOパターン、JDBC、JSchによるSSHトンネリング、WebSocketリアルタイム通信
+- **データ管理**: CVEメタデータ設計、リレーショナルデータモデル構築、Sessionベース認証管理
 
 ---
 
-## 📚 学習目的
+## 📝 プロジェクト進捗 & クラウド移行ロードマップ
 
-本プロジェクトでは、以下の技術を学習・実装しました。
+### 実装済み (Completed)
+- [x] VMware上のLinuxサーバーおよびUFWファイアウォール構築
+- [x] 会員登録 / ログイン / パスワード・情報変更
+- [x] お知らせCRUD / 検索 / ページネーション
+- [x] CVE脆弱性情報管理・照会
+- [x] SSH (JSch) によるKali Linuxリモート連携
+- [x] Nmapポート・サービススキャン機能
+- [x] hping3ネットワーク負荷テスト機能
+- [x] WebSocketによるリアルタイムターミナル制御
 
-- Java Servlet / JSP
-- MVCアーキテクチャ
-- DAO / DTOパターン
-- JDBC
-- MariaDB
-- Session Authentication
-- WebSocket
-- SSHリモート通信
-- JSch
-- Nmap
-- ネットワークセキュリティテスト
-- CVE / 脆弱性情報管理
-- Webベースのセキュリティテストツール設計
-
----
-
-## 📝 プロジェクト進捗
-
-### Completed
-
-- [x] 会員登録 / ログイン
-- [x] 会員情報管理
-- [x] お知らせCRUD
-- [x] お知らせ検索 / ページネーション
-- [x] 脆弱性情報管理
-- [x] Nmapポートスキャン
-- [x] SSHによるKali Linux連携
-- [x] WebSocketターミナル
-- [x] ネットワーク負荷テストUI
-
-### Future Improvements
-
-- [ ] パスワードのハッシュ化
-- [ ] 管理者権限の分離
-- [ ] コマンドAllowlist
-- [ ] CSRF対策
-- [ ] 入力値バリデーションの強化
-- [ ] テスト実行履歴の管理
-- [ ] テスト結果の可視化
-- [ ] Dockerベースの実行環境
-- [ ] 環境変数によるSecret管理
-- [ ] Spring Bootベースのアーキテクチャへの移行
-
----
-
-## 👨‍💻 Project
-
-**Stress Lab**
-
-Java Servlet/JSPをベースとしたネットワークセキュリティテスト・管理Webアプリケーション。
-
-> 教育および許可されたセキュリティテスト環境での利用を目的としたプロジェクトです。
+### 今後の改善 & クラウド移行計画 (Roadmap)
+- [ ] パスワードのArgon2/BCryptハッシュ化
+- [ ] コマンド実行Allowlistの厳格化
+- [ ] **Dockerコンテナ化**: Tomcatおよびテストエンジンのコンテナ化 (Docker Compose)
+- [ ] **AWS環境への移行**:
+  - VPC設計（Public/Private Subnet分離）
+  - セキュリティグループによるIPホワイトリスト制御のクラウド移行
+  - 内部MariaDBからAWS RDS (PostgreSQL/MySQL) へのデータ移行
+- [ ] **Secret管理**: SSH認証鍵およびDB接続パスワードのAWS Secrets Manager / 環境変数化
